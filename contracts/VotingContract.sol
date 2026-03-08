@@ -2,10 +2,9 @@
 pragma solidity ^0.8.31;
 
 contract Voting {
-    enum Vote { Yes, No, Abstain }
+    enum Vote { None, Yes, No, Abstain }
 
     mapping(address => Vote) public votes;
-    mapping(address => bool) public isVoted;
     uint public yesCount;
     uint public noCount;
     uint public abstainCount;
@@ -13,9 +12,8 @@ contract Voting {
     event Voted(address indexed voter, Vote vote);
 
     function vote(Vote _vote) public {
-        require(!isVoted[msg.sender], "You have already voted.");
+        require(votes[msg.sender] == Vote.None, "You have already voted.");
         votes[msg.sender] = _vote;
-        isVoted[msg.sender] = true;
         if (_vote == Vote.Yes) {
             yesCount++;
         } else if (_vote == Vote.No) {
@@ -32,7 +30,7 @@ contract Voting {
     }
 
     function getMyVote() public view returns (Vote) {
-        require(isVoted[msg.sender], "You haven't voted.");
+        require(votes[msg.sender] != Vote.None, "You haven't voted.");
         return votes[msg.sender];
     }
 }
