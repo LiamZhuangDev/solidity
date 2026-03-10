@@ -11,7 +11,7 @@ Ethereum is a blockchain with a single, canonical computer (Ethereum Virtual Mac
 Ether(ETH) is the native cryptocurrency of Ethereum. The purpose of ETH is to allow for a market for computation. Such a market provides an economic incentive for participants to verify and execute transaction requests and provide computational resources to the network.
 
 # What are smart contracts?
-Smart contracts are turning complete programs published into EVM state, they can be called with certain parameters, perform some actions or computation if certain condition are satified. They are often also called dapps, or decentralized apps.
+Smart contracts are turning complete programs published into EVM state, they can be called with certain parameters, perform some actions or computation if certain condition are satified. They are often also called dApps, or decentralized apps.
 
 # What are Ethereum Accounts?
 An Ethereum account is an entity with an ether (ETH) balance that can send messages on Ethereum. Accounts can be user-controlled or deployed as smart contracts.
@@ -75,3 +75,14 @@ Node types:
 - Full node, they do a block-by-block validation of the blockchain, including downloading and verifying the block body and state data for each block. Full nodes only keep a local copy of relatively recent data (typically the most recent 128 blocks), allowing older data to be deleted to save disk space.
 - Archive node, verify every block from genesis and never delete any of the downloaded data.
 - Light node, only download block headers (contain summary info about the content of the block). Any other info the light node requires gets requested from a full node. The light node can then independently verify the data they receive against the state roots in the block headers.
+
+# What are Ethereum networks?
+Ethereum networks are groups of connected computers that communicate using the Ethereum protocol. There is only one Ethereum Mainnet, but independent networks conforming to the same protocol rules can be created for testing and development purpose.
+
+Public networks
+- Ethereum Mainnet, the primary public Ethereum production blockchain, where actual-value transactions occur on the distributed ledger.
+- Ethereum Testnets, used by protocol developers or smart contract developers to test both protocol upgrades as well as potential smart contracts in a production-like environment before deployment to Mainnet. Sepolia is the recommended default testnet for Dapp development.
+
+Private networks
+- Development networks, a local blockchain instance to test dApps.
+- Consortium networks, the consensus process is controlled by a pre-defined set of nodes that are trusted.
