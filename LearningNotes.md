@@ -26,6 +26,29 @@ The Ethereum Virtual Machine (EVM) is a decentralized virtual environment that e
 
 When a transaction calls a smart contract, the Ethereum Virtual Machine executes the contract’s compiled bytecode instruction-by-instruction on a stack-based machine across all nodes, consuming gas and updating the blockchain state deterministically if execution succeeds.
 
+# EVM storage, memory and calldata
+```
+| Location | Where it lives           | Lifetime        |
+| -------- | ------------------------ | --------------- |
+| storage  | blockchain state         | permanent       |
+| memory   | EVM temporary RAM        | during the call |
+| calldata | transaction input buffer | during the call |
+```
+EVM layout when a function runs:
+```
+┌─────────────────────────────┐
+│ Stack (max 1024 items)      │
+│ small values, pointers      │
+├─────────────────────────────┤
+│ Memory                      │
+│ temporary arrays/structs    │
+│ uint[] memory arr           │
+├─────────────────────────────┤
+│ Storage                     │
+│ contract state variables    │
+└─────────────────────────────┘
+```
+
 # What is Gas and Gas fee?
 Gas refers to the unit that measures the amount of computational effort required to execute specific operations on the Ethereum network.
 
