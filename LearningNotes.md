@@ -63,3 +63,15 @@ The gas limit refers to the maximum amount of gas you are willing to consume on 
 A standard ETH transfer requires a gas limit of 21,000 units of gas. If you put a gas limit of 50,000 for a simple ETH transfer, the EVM would consume 21,000, and you would get back the remaining 29,000. However, if you specify too little gas, for example, a gas limit of 20,000 for a simple ETH transfer, the transaction will fail during the validation phase. t will be rejected before being included in a block, and no gas will be consumed.
 
 On the other hand, if a transaction runs out of gas during execution (e.g., a smart contract uses up all the gas halfway), the EVM will revert any changes, but all the gas provided will still be consumed for the work performed.
+
+# What are Ethereum nodes and clients?
+A 'node' is any instance of Ethereum client software that is connected to other computers in the Ethereum network.
+
+A node has to run two clients: an execution client and a consensus client.
+- The execution client (also known as the Execution Engine, EL client or formerly the Eth1 client) listens to new transactions broadcasted in the network, executes them in EVM, and holds the latest state and database of all current Ethereum data.
+- The consensus client (also known as the Beacon Node, CL client or formerly the Eth2 client) implements the proof-of-stake consensus algorithm, which enables the network to achieve agreement based on validated data from the execution client. 
+
+Node types:
+- Full node, they do a block-by-block validation of the blockchain, including downloading and verifying the block body and state data for each block. Full nodes only keep a local copy of relatively recent data (typically the most recent 128 blocks), allowing older data to be deleted to save disk space.
+- Archive node, verify every block from genesis and never delete any of the downloaded data.
+- Light node, only download block headers (contain summary info about the content of the block). Any other info the light node requires gets requested from a full node. The light node can then independently verify the data they receive against the state roots in the block headers.
