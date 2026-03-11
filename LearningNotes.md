@@ -109,3 +109,34 @@ Public networks
 Private networks
 - Development networks, a local blockchain instance to test dApps.
 - Consortium networks, the consensus process is controlled by a pre-defined set of nodes that are trusted.
+
+# What is consensus?
+By consensus, we mean that a general agreement has been reached. In regard to the Ethereum blockchain, the process is formalized, and reaching consensus means that at least 66% of the nodes on the network agree on the global state of the network.
+
+# What is consensus mechanism?
+It refers to the entire stack of protocols, incentives and ideas that allow a network of nodes to agree on the state of a blockchain.
+Ethereum uses a proof-of-stake-based consensus mechanism that derives its cypto-economic security from a set of rewards and penalties applied to capital locked by stakers.
+This incentive structure encourages individual stakers to operate honest validators, punishes those who don't, and creates an extremely high cost to attack the network.
+
+# Types of consensus mechanisms
+```
+| Category                     | Proof-of-Work (PoW)                         | Proof-of-Stake (PoS)                              |
+| ---------------------------- | ------------------------------------------- | ------------------------------------------------- |
+| Example Networks             | Bitcoin, early Ethereum                     | Modern Ethereum                                   |
+| Who Creates Blocks           | Miners compete using computing power        | Validators selected based on staked tokens        |
+| How Block Producer Is Chosen | First miner to solve a cryptographic puzzle | Random selection weighted by amount of ETH staked |
+| Resource Used                | Massive computational power & electricity   | Locked cryptocurrency stake                       |
+| Reward                       | Block reward + transaction fees             | Staking rewards + transaction fees                |
+| Security Model               | Attacker needs 51% of global hash power     | Attacker needs large percentage of staked tokens  |
+| Cost of Attack               | Buy/operate huge mining hardware and energy | Acquire and risk losing large amounts of crypto   |
+| Energy Consumption           | Very high                                   | Low compared to PoW                               |
+| Fork Choice Rule             | Chain with most accumulated work            | Chain with highest attestation weight             |
+| Penalty for Misbehavior      | Usually none beyond wasted electricity      | Slashing (validators lose part of their stake)    |
+| Hardware Requirement         | Specialized mining hardware (ASICs/GPUs)    | Regular servers; stake is the main requirement    |
+| Speed & Efficiency           | Slower and energy intensive                 | Faster, more energy efficient                     |
+```
+```
+One-sentence summary:
+PoW: security comes from computational work.
+PoS: security comes from economic stake at risk.
+```
