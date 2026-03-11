@@ -4,6 +4,12 @@ pragma solidity ^0.8.31;
 contract BatchUpdateOptimization {
     uint[] public data;
 
+    function addData(uint[] calldata inputs) external {
+        for (uint i = 0; i < inputs.length; i++) {
+            data.push(inputs[i]);
+        }
+    }
+
     function updateAllBad(uint[] calldata newData) external {
         require(newData.length == data.length);
         uint len = data.length;
