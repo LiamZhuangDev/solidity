@@ -55,10 +55,13 @@ contract ArrayIteration {
             uint len = numbers.length;
             uint[] memory result = new uint[](len);
 
-            for (uint i = 0; i < len; i++) {
+            for (uint i = 0; i < len;) {
                 if (numbers[i] > threshold) {
                     result[count] = numbers[i];
                     count++;
+                }
+                unchecked {
+                    ++i;
                 }
             }
 
