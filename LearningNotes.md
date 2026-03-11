@@ -84,9 +84,113 @@ If base fee stays low → you only pay what's needed
 # what is gas limit?
 The gas limit refers to the maximum amount of gas you are willing to consume on a transaction. More complicated transactions involving smart contracts require more computational work, so they require a higher gas limit than a simple payment. 
 
-A standard ETH transfer requires a gas limit of 21,000 units of gas. If you put a gas limit of 50,000 for a simple ETH transfer, the EVM would consume 21,000, and you would get back the remaining 29,000. However, if you specify too little gas, for example, a gas limit of 20,000 for a simple ETH transfer, the transaction will fail during the validation phase. t will be rejected before being included in a block, and no gas will be consumed.
+A standard ETH transfer requires a gas limit of 21,000 units of gas. If you put a gas limit of 50,000 for a simple ETH transfer, the EVM would consume 21,000, and you would get back the remaining 29,000. However, if you specify too little gas, for example, a gas limit of 20,000 for a simple ETH transfer, the transaction will fail during the validation phase, it will be rejected before being included in a block, and no gas will be consumed.
 
 On the other hand, if a transaction runs out of gas during execution (e.g., a smart contract uses up all the gas halfway), the EVM will revert any changes, but all the gas provided will still be consumed for the work performed.
+
+# Common EVM operations gas cost
+Opcode Gas Costs
+```
+| Operation          | Opcode             | Gas |
+| ------------------ | ------------------ | --- |
+| Addition           | `ADD`              | 3   |
+| Subtraction        | `SUB`              | 3   |
+| Multiplication     | `MUL`              | 5   |
+| Division           | `DIV`              | 5   |
+| Comparison         | `LT`, `GT`, `EQ`   | 3   |
+| Logical operations | `AND`, `OR`, `XOR` | 3   |
+| Bit shift          | `SHL`, `SHR`       | 3   |
+```
+Hashing
+```
+| Operation | Opcode      | Gas             |
+| --------- | ----------- | --------------- |
+| Hash data | `KECCAK256` | 30 + 6 per word |
+```
+Calldata operations
+```
+| Operation     | Opcode         | Gas             |
+| ------------- | -------------- | --------------- |
+| Read calldata | `CALLDATALOAD` | 3               |
+| Calldata size | `CALLDATASIZE` | 2               |
+| Copy calldata | `CALLDATACOPY` | 3 + memory cost |
+```
+Memory operations
+```
+| Operation        | Opcode    | Gas                         |
+| ---------------- | --------- | --------------------------- |
+| Load from memory | `MLOAD`   | 3                           |
+| Store to memory  | `MSTORE`  | 3                           |
+| Memory expansion | automatic | increases depending on size |
+```
+Storage operations
+```
+| Operation                         | Opcode   | Gas                 |
+| --------------------------------- | -------- | ------------------- |
+| Read storage (cold)               | `SLOAD`  | 2100                |
+| Read storage (warm)               | `SLOAD`  | 100                 |
+| Write new slot (0 → non-zero)     | `SSTORE` | 20,000              |
+| Update slot (non-zero → non-zero) | `SSTORE` | 5,000               |
+| Clear slot (non-zero → 0)         | `SSTORE` | 5,000 (with refund) |
+```
+Control Flow
+```
+| Operation        | Opcode   | Gas                                       |
+| ---------------- | -------- | ----------------------------------------- |
+| Jump             | `JUMP`   | 8                                         |
+| Conditional jump | `JUMPI`  | 10                                        |
+| Stop execution   | `STOP`   | 0                                         |
+| Revert           | `REVERT` | 0 (but consumes remaining gas for memory) |
+```
+External calls
+```
+| Operation     | Opcode         | Gas           |
+| ------------- | -------------- | ------------- |
+| Contract call | `CALL`         | 700 + dynamic |
+| Static call   | `STATICCALL`   | 700           |
+| Delegate call | `DELEGATECALL` | 700           |
+```
+Logs (Events)
+```
+| Operation     | Opcode | Gas |
+| ------------- | ------ | --- |
+| Event base    | `LOG`  | 375 |
+| Per topic     |        | 375 |
+| Per byte data |        | 8   |
+```
+Quick Cost Hierarchy (From cheapest to most expensive)
+```
+Stack operations
+   ↓
+Memory operations
+   ↓
+Calldata reads
+   ↓
+Hashing
+   ↓
+Storage reads (SLOAD)
+   ↓
+External calls
+   ↓
+Storage writes (SSTORE)
+```
+
+# Mas gas per transaction and typical gas usage examples
+- A transaction cannot use more gas than the block allows: 
+```
+max_tx_gas <= block_gas_limit
+```
+Typical values (approximate on Ethereum mainnet): 30,000,000 gas (slightly below 30M in practice)
+
+- Typical gas usage examples
+```
+| Action                 | Gas                |
+| ---------------------- | ------------------ |
+| Simple ETH transfer    | ~21,000            |
+| ERC20 transfer         | ~50,000            |
+| Uniswap swap           | ~120,000 - 200,000 |
+| Large DeFi interaction | 300k - 1M          |
+```
 
 # What are Ethereum nodes and clients?
 A 'node' is any instance of Ethereum client software that is connected to other computers in the Ethereum network.
