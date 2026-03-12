@@ -4,7 +4,7 @@ pragma solidity ^0.8.31;
 contract ArrayGasOptimization {
     uint[] public data;
 
-    function add(uint[] memory values) public {
+    function add(uint[] calldata values) public {
         for (uint i = 0; i < values.length; i++) {
             if (values[i] > 10) {
                 data.push(values[i]);
@@ -57,7 +57,7 @@ contract ArrayGasOptimization {
         }
     }
 
-    function add4(uint[] memory values) public {
+    function add4(uint[] calldata values) public {
         uint inputLen = values.length;
         uint origLen = data.length;
 
@@ -81,9 +81,9 @@ contract ArrayGasOptimization {
         }
     }
 
-    // 2031292 execution gas cost when n = 100
-    // 4304253 execution gas cost when n = 200
-    // 11260496 execution gas cost when n = 500
+    // 2,059,201 execution gas cost when n = 100
+    // 4,359,042 execution gas cost when n = 200
+    // 11,259,501 execution gas cost when n = 500
     function testAdd(uint n) external {
         uint[] memory arr = new uint[](n);
 
@@ -91,12 +91,12 @@ contract ArrayGasOptimization {
             arr[i] = i;
         }
 
-        add(arr); 
+        this.add(arr); 
     }
 
-    // 2086591 execution gas cost when n = 100
-    // 4416993 execution gas cost when n = 200
-    // 11409368 execution gas cost when n = 500
+    // 2,086,591 execution gas cost when n = 100
+    // 4,416,993 execution gas cost when n = 200
+    // 11,409,368 execution gas cost when n = 500
     function testAdd2(uint n) external {
         uint[] memory arr = new uint[](n);
 
@@ -107,9 +107,9 @@ contract ArrayGasOptimization {
         this.add2(arr); // 'this.' forces an external call, which encodes arr into calldata automatically
     }
 
-    // 2084934 execution gas cost when n = 100
-    // 4411575 execution gas cost when n = 200
-    // 11392434 execution gas cost when n = 500
+    // 2,084,934 execution gas cost when n = 100
+    // 4,411,575 execution gas cost when n = 200
+    // 11,392,434 execution gas cost when n = 500
     function testAdd3(uint n) external {
         uint[] memory arr = new uint[](n);
 
@@ -120,9 +120,9 @@ contract ArrayGasOptimization {
         this.add3(arr);
     }
 
-    // 2059796 execution gas cost when n = 100
-    // 4359737 execution gas cost when n = 200
-    // 11143942 execution gas cost when n = 500
+    // 2,059,796 execution gas cost when n = 100
+    // 4,359,737 execution gas cost when n = 200
+    // 11,143,942 execution gas cost when n = 500
     function testAdd4(uint n) external {
         uint[] memory arr = new uint[](n);
 
@@ -130,7 +130,7 @@ contract ArrayGasOptimization {
             arr[i] = i;
         }
 
-        add4(arr);
+        this.add4(arr);
     }
 }
 
