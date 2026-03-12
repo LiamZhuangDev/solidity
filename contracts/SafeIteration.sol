@@ -15,8 +15,7 @@ contract SafeIteration {
     /// @notice Batch processing, Sum values in the range [start, end).
     function sumRange(uint start, uint end) 
         public view returns (uint) {
-        require(start <= end, "Invalid range");
-        require(start > 0, "Start index out of bounds");
+        require(start < end, "Invalid range");
         require(end <= data.length, "End index out of bounds");
 
         uint total = 0;
