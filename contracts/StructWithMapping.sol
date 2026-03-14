@@ -42,3 +42,39 @@ contract StructWithMapping {
         return proposals[proposalId].voters[voter];
     }
 }
+
+contract StructWithMapping2 {
+    struct Proposal {
+        string description;
+        uint voteCount;
+        uint deadline;
+        bool executed;
+        mapping(address => bool) voters;
+    }
+
+    Proposal[] public proposals;
+
+    function createProposal(string calldata description, uint duration)
+        public returns (uint proposalId)
+    {
+        proposals.push(); // push an empty Proposal struct
+
+        proposalId = proposals.length - 1;
+        Proposal storage p = proposals[proposalId];
+        p.description = description;
+        p.deadline = block.timestamp + duration;
+        p.voteCount = 0;
+        p.executed = false;
+    }
+
+    function vote(uint proposalId) public {
+        require(proposalId < proposals.length, "invalid proposal ID");
+
+        Proposal storage p = proposals[proposalId];
+        require(block.timestamp < p.deadline, "voting ended");
+        require(!p.voters[msg.sender], "user already voted");
+
+        p.voters[msg.sender] = true;
+        p.voteCount++;
+    }
+}
