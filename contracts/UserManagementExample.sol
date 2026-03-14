@@ -42,7 +42,8 @@ contract UserAccountManager {
 
     function deposit() public payable {
         require(users[msg.sender].exists, "User not regiestered");
-        users[msg.sender].balance += msg.value; 
+        require(msg.value > 0, "Must send ETH");
+        users[msg.sender].balance += msg.value;
     }
 
     function getMyInfo() public view returns (UserInfo memory) {
