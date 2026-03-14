@@ -31,7 +31,7 @@ When a transaction calls a smart contract, the Ethereum Virtual Machine executes
 | Location | Where it lives             | Lifetime        | Mutable         | Typical Usage                                        | Gas Cost                  |
 | -------- | -------------------------- | --------------- | --------------- | ---------------------------------------------------- | ------------------------- |
 | storage  | blockchain state           | permanent       | yes             | state variables, mappings, persistent arrays         | most expensive            |
-| memory   | EVM temporary RAM          | during the call | yes             | temp variables, return values, function computations | medium                    |
+| memory   | EVM linear temporary RAM   | during the call | yes             | temp variables, return values, function computations | medium                    |
 | calldata | transaction input buffer   | during the call | read-only       | external function parameters (arrays, structs)       | cheapest for large inputs |
 | stack    | EVM stack (max 1024 slots) | during the call | yes             | local primitives variables (uint, bool, etc)         | cheapest                  |
 

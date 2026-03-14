@@ -4,7 +4,7 @@ pragma solidity ^0.8.31;
 contract ArrayMappingSet {
     address[] public users; // enumerable
     mapping(address => bool) public userRegistered; // efficient lookup
-    mapping(address => uint) public userIndex; // keep track of each user in the array, used in a quick remove  
+    mapping(address => uint) public userIndex; // keep track of each user in the array, allow O(1) deletion  
     uint public constant MAX_NUM_OF_USERS = 1000;
 
     function getAllUsers() public view returns (address[] memory) {
