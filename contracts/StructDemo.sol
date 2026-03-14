@@ -57,3 +57,51 @@ contract CalldataStruct {
         return u.name;
     }
 }
+
+contract StructOperations {
+    struct User {
+        string name;
+        uint age;
+        address wallet;
+        bool isActive;
+    }
+
+    User[] public users;
+
+    function addUser(string calldata name, uint age) public {
+        users.push(User({
+            name: name,
+            age: age,
+            wallet: msg.sender,
+            isActive: true
+        }));
+    }
+
+    function getUserAge(uint index) public view returns (uint) {
+        require(index < users.length, "User does not exist");
+        User storage user = users[index];
+        return user.age;
+    }
+
+    function updateUserAge(uint index, uint newAge) public {
+        require(index < users.length, "User does not exist");
+        User storage user = users[index];
+        user.age = newAge;
+    }
+
+    function deactivateUser(uint index) public {
+        require(index < users.length, "User does not exist");
+        User storage user = users[index];
+        user.isActive = false;
+    }
+
+    function replaceUser(uint index, User memory newUser) public {
+        require(index < users.length, "User does not exist");
+        users[index] = newUser;
+    }
+
+    function getUserInfo(uint index) public view returns (User memory) {
+        require(index < users.length, "User does not exist");
+        return users[index];
+    }
+}
