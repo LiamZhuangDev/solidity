@@ -3,10 +3,9 @@ pragma solidity ^0.8.31;
 
 contract TodoList {
     struct Todo {
-        uint id;
-        string task;
-        bool done;
-        uint timestamp;
+        uint64 timestamp; // slot 0
+        bool done; // slot 0
+        string task; // slot 1, string always starts a new slot, a pointer to the string
     }
 
     uint public constant MAX_TODOS_PER_USER = 100;
@@ -30,10 +29,9 @@ contract TodoList {
         uint id = nextId++;
         ids.push(id);
         todos[id] = Todo({
-            id: id,
             task: task,
             done: false,
-            timestamp: block.timestamp
+            timestamp: uint64(block.timestamp)
         });
         todoIndex[id] = ids.length - 1;
         todoOwner[id] = msg.sender;
@@ -66,19 +64,22 @@ contract TodoList {
         delete todoOwner[id];
     }
 
-    function getMyTodos() external view returns (Todo[] memory) {
-        uint[] storage ids = userTodoIds[msg.sender];
-        uint len = ids.length;
-        Todo[] memory myTodos = new Todo[](len);
-        for (uint i = 0; i < len; i++) {
-            uint id = ids[i];
-            myTodos[i] = todos[id];
-        }
+    function getMyTodos() external view returns (uint[] memory ids, Todo[] memory items) {
+        uint[] storage storedIds = userTodoIds[msg.sender];
+        uint len = storedIds.length;
 
-        return myTodos;
+        ids = new uint[](len);
+        items = new Todo[](len);
+        
+        for (uint i = 0; i < len; i++) {
+            uint id = storedIds[i];
+            ids[i] = id;
+            items[i] = todos[id];
+        }
     }
 
     function getTodo(uint id) external view returns (Todo memory) {
+        require(todoOwner[id] == msg.sender, "Not your todo");
         return todos[id];
     }
 
