@@ -65,4 +65,24 @@ contract TodoList {
         delete todoIndex[id];
         delete todoOwner[id];
     }
+
+    function getMyTodos() external view returns (Todo[] memory) {
+        uint[] memory ids = userTodoIds[msg.sender];
+        uint len = ids.length;
+        Todo[] memory myTodos = new Todo[](len);
+        for (uint i = 0; i < len; i++) {
+            uint id = ids[i];
+            myTodos[i] = todos[id];
+        }
+
+        return myTodos;
+    }
+
+    function getTodo(uint id) external view returns (Todo memory) {
+        return todos[id];
+    }
+
+    function getMyTodoCount() external view returns (uint count) {
+        return userTodoIds[msg.sender].length;
+    }
 }
