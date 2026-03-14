@@ -67,7 +67,7 @@ contract TodoList {
     }
 
     function getMyTodos() external view returns (Todo[] memory) {
-        uint[] memory ids = userTodoIds[msg.sender];
+        uint[] storage ids = userTodoIds[msg.sender];
         uint len = ids.length;
         Todo[] memory myTodos = new Todo[](len);
         for (uint i = 0; i < len; i++) {
