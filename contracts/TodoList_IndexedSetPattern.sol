@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.31;
 
+// Indexed-set pattern:
+// 1) a Solidity design that stores items in a mapping by stable ID while 
+// 2) keeping an array of those IDs plus an index mapping to enable O(1) lookup, iteration, and deletion.
+
+// Indexed-set pattern with stable IDs And O(1) deletion.
+// Indexed-set might be over-engineering for a simple todo list.
 contract TodoList {
     struct Todo {
         uint64 timestamp; // slot 0
