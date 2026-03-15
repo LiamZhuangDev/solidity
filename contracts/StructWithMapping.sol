@@ -41,6 +41,18 @@ contract StructWithMapping {
         require(proposalId < proposalCount, "invalid proposal ID");
         return proposals[proposalId].voters[voter];
     }
+
+    function getMostVotedProposal() public view returns (uint proposalId) {
+        uint maxVotes = 0;
+
+        for (uint i = 0; i < proposalCount; i++) {
+            uint count = proposals[i].voteCount;
+            if (count > maxVotes) {
+                maxVotes = count;
+                proposalId = i;
+            }
+        }
+    }
 }
 
 contract StructWithMapping2 {
@@ -76,5 +88,17 @@ contract StructWithMapping2 {
 
         p.voters[msg.sender] = true;
         p.voteCount++;
+    }
+
+    function getMostVotedProposal() public view returns (uint proposalId) {
+        uint maxVotes = 0;
+
+        for (uint i = 0; i < proposals.length; i++) {
+            uint count = proposals[i].voteCount;
+            if (count > maxVotes) {
+                maxVotes = count;
+                proposalId = i;
+            }
+        }
     }
 }
