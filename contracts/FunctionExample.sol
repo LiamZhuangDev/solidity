@@ -30,4 +30,24 @@ contract FunctionExample {
         sum = _v1 + _v2;
         product = _v1 * _v2;
     }
+
+    function testCalculate() public pure returns (uint value) {
+        // receive all returns
+        (uint sum, uint product) = calculate(1, 2);
+
+        // receive partial returns
+        (uint sum2, ) = calculate(1, 2);
+
+        value = sum + product + sum2;
+    }
+
+    // reference type param, needs to specify the storage location
+    function getLength(uint[] memory arr) public pure returns (uint) {
+        return arr.length;
+    }
+
+    // calldata is more gas-efficient than memory
+    function getLength2(uint[] calldata arr) public pure returns (uint) {
+        return arr.length;
+    }
 }
