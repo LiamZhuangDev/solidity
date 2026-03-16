@@ -77,6 +77,15 @@ contract InheritedCallee is Callee {
         return _internalFunc();
     }
 
+    // this is actually external call and EVM copies arr to calldata, NOT recommended!
+    // should use internal + external wrapper
+    function callExternalFuncFromBase() public view returns (uint) {
+        uint[] memory arr = new uint[](2);
+        arr[0] = 1;
+        arr[1] = 2;
+        return this.externalArrSum(arr);
+    }
+
     // function callPrivateFuncFromBase() public pure returns (string memory) {
     //     return _secretFunc(); // not found
     // }
