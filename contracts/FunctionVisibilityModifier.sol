@@ -14,7 +14,9 @@ contract Callee {
         return "This is an external function";
     }
 
-    // save gas by using calldata in external/public functions
+    // save gas by using calldata for big array in external/public functions
+    // one exception is calling public func with calldata inside of the contract, it will copy arr to memory
+    // because there aren't calldata input buffers in internal calls.
     function externalArrSum(uint[] calldata arr)
         external pure returns (uint) {
         uint sum = 0;
@@ -28,6 +30,14 @@ contract Callee {
     // this is actually an external call, uses more gas, which is not recommended
     function callExternalFuncInsideContract() external view returns (string memory) {
         return this.externalFunc();
+    }
+
+    function _internalFunc() internal pure returns (string memory) {
+        return "This is an internal function";
+    }
+
+    function callInternalFuncInsideContract() external pure returns (string memory) {
+        return _internalFunc();
     }
 }
 
@@ -46,5 +56,15 @@ contract Caller {
 
     function callExternalFunc() public view returns (string memory) {
         return callee.externalFunc();
+    }
+
+    // function callInternalFunc() public view returns (string memory) {
+    //     return callee._internalFunc(); // not found
+    // }
+}
+
+contract InheritedCallee is Callee {
+    function callInternalFuncFromBase() public pure returns (string memory) {
+        return _internalFunc();
     }
 }
