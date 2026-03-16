@@ -2,14 +2,32 @@
 pragma solidity ^0.8.31;
 
 contract Callee {
-    uint public value;
-
-    function getValue() public view returns (uint) {
-        return value;
+    function publicFunc() public pure returns (string memory) {
+        return "This is a public function";
     }
 
-    function testPublicFunctionInsideContract() public view returns (uint) {
-        return getValue();
+    function callPublicFuncInsideContract() public pure returns (string memory) {
+        return publicFunc();
+    }
+
+    function externalFunc() external pure returns (string memory) {
+        return "This is an external function";
+    }
+
+    // save gas by using calldata in external/public functions
+    function externalArrSum(uint[] calldata arr)
+        external pure returns (uint) {
+        uint sum = 0;
+        uint len = arr.length;
+        for (uint i = 0; i < len; i++) {
+            sum += arr[i];
+        }
+        return sum;
+    }
+
+    // this is actually an external call, uses more gas, which is not recommended
+    function callExternalFuncInsideContract() external view returns (string memory) {
+        return this.externalFunc();
     }
 }
 
@@ -22,7 +40,11 @@ contract Caller {
         callee = Callee(_addr);
     }
 
-    function callPublicFunc() public view returns (uint) {
-        return callee.getValue();
+    function callPublicFunc() public view returns (string memory) {
+        return callee.publicFunc();
+    }
+
+    function callExternalFunc() public view returns (string memory) {
+        return callee.externalFunc();
     }
 }
