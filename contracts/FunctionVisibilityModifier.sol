@@ -39,6 +39,11 @@ contract Callee {
     function callInternalFuncInsideContract() external pure returns (string memory) {
         return _internalFunc();
     }
+
+    // only accessible within the contract
+    function _secretFunc() private pure returns (string memory) {
+        return "secret message";
+    }
 }
 
 contract Caller {
@@ -61,10 +66,18 @@ contract Caller {
     // function callInternalFunc() public view returns (string memory) {
     //     return callee._internalFunc(); // not found
     // }
+
+    // function callPrivateFuncFromBase() public pure returns (string memory) {
+    //     return callee._secretFunc(); // not found
+    // }
 }
 
 contract InheritedCallee is Callee {
     function callInternalFuncFromBase() public pure returns (string memory) {
         return _internalFunc();
     }
+
+    // function callPrivateFuncFromBase() public pure returns (string memory) {
+    //     return _secretFunc(); // not found
+    // }
 }
