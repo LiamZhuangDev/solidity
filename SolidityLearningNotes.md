@@ -95,4 +95,27 @@ function │
 | normal    | ✅         | ✅           | ❌          |
 | `payable` | ✅         | ✅           | ✅          |
 ```
-# function modifiers
+
+# custom modifiers
+Besides visibility modifiers and State mutability modifiers, we can define `custom modifiers` which are reusable piece of code that wraps a function to add pre-conditions, post-conditions, or common logic.
+It is mainly used to:
+- enforece access control
+- validate conditions
+- avoid repeating code across functions
+Base syntax:
+```
+modifier modifierName() {
+    // code before function
+    _; // execute the original function body here
+    // code after function
+}
+
+modifier onlyOwner() {
+    require(msg.sender == owner, "Not owner");
+    _;
+}
+
+function withdraw() public onlyOwner {
+    // only owner can execute
+}
+```
