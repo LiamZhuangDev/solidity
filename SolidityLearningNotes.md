@@ -53,8 +53,9 @@ data: 0x12345678 // any data bytes
 `receive()` and `fallback()` are special functions that are automatically executed when a contract receives a call that does not match any existing function.
 They are mainly used for handling ETH transfers or unknown function calls.
 
-`receive()` is executed when 1) the transaction sends ETH and 2) the calldata is empty
-`fallback()` is triggered when 1) the called function does not exist or 2) calldata exists but doesn't match any function
+`receive()` is executed when 1) the transaction sends ETH and 2) the calldata is empty.
+
+`fallback()` is triggered when 1) the called function does not exist or 2) calldata exists but doesn't match any function.
 
 ```
 incoming call
