@@ -91,13 +91,13 @@ function │
 ```
 | Modifier  | Read state | Modify state | Receive ETH |
 | --------- | ---------- | ------------ | ----------- |
-| `pure`    | ❌         | ❌           | ❌          |
-| `view`    | ✅         | ❌           | ❌          |
+| pure      | ❌         | ❌           | ❌          |
+| view      | ✅         | ❌           | ❌          |
 | normal    | ✅         | ✅           | ❌          |
-| `payable` | ✅         | ✅           | ✅          |
+| payable   | ✅         | ✅           | ✅          |
 ```
 
-# custom modifiers
+# Custom modifiers
 Besides visibility modifiers and State mutability modifiers, we can define `custom modifiers` which are reusable piece of code that wraps a function to add pre-conditions, post-conditions, or common logic.
 It is mainly used to:
 - enforece access control
@@ -120,3 +120,78 @@ function withdraw() public onlyOwner {
     // only owner can execute
 }
 ```
+# ERC20
+ERC20 is a standard for fungible tokens on Ethereum. It defines a set of rules (functions + events) that every token contract must follow.
+- ERC = Ethereum Request for Comments
+- 20 = proposal number
+- fungible tokens = all tokens are identical and interchangable. E.g. USDT, USDC, DAI.
+- ERC20 tokens are NOT ETH, they live inside a contract, just numbers in a mapping. So No `.call{value:...}("")`.
+
+Why ERC20 exists?
+| Before ERC20                                    | After ERC20                                       |
+| ------------------------------------------------| ------------------------------------------------- |
+| Every token had different interfaces 😵         | ✅ Wallets (MetaMask) understand all tokens       |
+| Wallets & exchanges couldn't interact easily    | ✅ DEXs (Uniswap) can trade any token             | 
+|                                                 | ✅ Contracts can interact with tokens generically | 
+
+1. Important State variables
+- `balanceOf`, tracks how many tokens each address owns
+```
+mapping(address => uint256) public balanceOf;
+```
+
+- `allowance`, tracks permission to spend tokens
+```
+// owner -> spender -> amount
+// owner = token holder
+// spender = approved account (like a DEX)
+// e.g. Alice allows Uniswap to spend 100 tokens
+mapping(address => mapping(address => uint256)) public allowance;
+```
+
+- `totalSupply`, the total number of tokens in existence
+```
+uint256 public totalSupply;
+```
+
+- Matadata (optional but standard)
+```
+string public name;
+string public symbol;
+uint8 public decimals;
+```
+
+2. Core Functions (Must Have)
+- `transfer`, move tokens from YOUR account to someone.
+```
+function transfer(address to, uint256 amount) public returns (bool);
+```
+
+- `approve`, allow someone else to spend your tokens.
+```
+function approve(address spender, uint256 amount) public returns (bool);
+```
+
+- `transferFrom`, spend tokens on behalf of someone else, used by DEXs, lending protocols, etc.
+```
+function transferFrom(address from, address to, uint256 amount) public returns (bool);
+```
+
+- How `approve` and `tranferFrom` work together
+```
+1. Alice calls: approve(Uniswap, 100)
+2. Uniswap calls: transferFrom(Alice, Pool, 100)
+This is how DeFi works.
+```
+
+3. Events (Very Important)
+- `Transfer`, emitted when tokens move. Wallets rely on this to show balances.
+```
+event Transfer(address indexed from, address indexed to, uint256 value);
+```
+
+- `Approval`, emitted when approval is set.
+```
+event Approval(address indexed owner, address indexed spender, uint256 value);
+```
+
