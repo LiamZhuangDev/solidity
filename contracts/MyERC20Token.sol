@@ -73,4 +73,23 @@ contract MyERC20Token {
 
         return true;
     }
+
+    function mint(address to, uint256 amount) public onlyOwner {
+        require(to != address(0), "Cannot mint to zero address");
+
+        totalSupply += amount;
+        balanceOf[to] += amount;
+
+        emit Transfer(address(0), to, amount);
+    }
+
+    function burn(uint256 amount) public {
+        require(balanceOf[msg.sender] >= amount, "Insufficient funds to burn");
+        require(totalSupply >= amount, "Insufficient total supply to burn");
+
+        totalSupply -= amount;
+        balanceOf[msg.sender] -= amount;
+
+        emit Transfer(msg.sender, address(0), amount);
+    }
 }
