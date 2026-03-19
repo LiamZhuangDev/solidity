@@ -67,6 +67,10 @@ contract Crowdfunding {
         require(success, "refund failed");
     }
 
+    function getProgress() public view returns (uint percentage) {
+        return (totalFunded * 100) / goal;
+    }
+
     receive() external payable {
         revert("Cannot send ETH directly to contract, call contribute function instead.");
     }
