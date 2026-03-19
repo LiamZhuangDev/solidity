@@ -3,12 +3,14 @@ pragma solidity ^0.8.31;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 
 contract MyERC20Token {
     string public name;
     string public symbol;
     uint8 public decimals;
     uint256 public totalSupply;
+    bool public paused = false;
 
     mapping(address => uint256) public balanceOf;
     mapping(address => mapping(address => uint256)) public allowance; // owner -> spender -> amount
@@ -20,6 +22,11 @@ contract MyERC20Token {
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Only owner can call this");
+        _;
+    }
+
+    modifier whenNotPaused() {
+        require(!paused, "Contract is paused");
         _;
     }
 
@@ -50,7 +57,7 @@ contract MyERC20Token {
         emit Transfer(from, to, amount);
     }
 
-    function transfer(address to, uint256 amount) public returns (bool) {
+    function transfer(address to, uint256 amount) public whenNotPaused returns (bool) {
         _transfer(msg.sender, to, amount);
         return true;
     }
@@ -66,7 +73,7 @@ contract MyERC20Token {
     }
 
     function transferFrom(address from, address to, uint256 amount) 
-        public returns (bool) 
+        public whenNotPaused returns (bool) 
     {
         require(allowance[from][msg.sender] >= amount, "Insufficient allowance");
 
@@ -113,9 +120,17 @@ contract MyERC20Token {
 
         return true;
     }
+
+    function pause() public onlyOwner {
+        paused = true;
+    }
+
+    function resume() public onlyOwner {
+        paused = false;
+    }
 }
 
-contract MyERC20Token2 is ERC20, Ownable {
+contract MyERC20Token2 is ERC20, Ownable, Pausable {
     constructor(
         string memory name_,
         string memory symbol_,
@@ -151,5 +166,19 @@ contract MyERC20Token2 is ERC20, Ownable {
         }
 
         return true;
+    }
+
+    function pause() public onlyOwner {
+        _pause();
+    }
+
+    function unpause() public onlyOwner {
+        _unpause();
+    }
+
+    // _transfer, _mint and _burn all go through _update
+    // so by overriding _update, we pause everything.
+    function _update(address from, address to, uint256 amount) internal override whenNotPaused {
+        super._update(from, to, amount);
     }
 }
