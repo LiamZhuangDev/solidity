@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.31;
 
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
 contract MyERC20Token {
     string public name;
     string public symbol;
@@ -91,5 +94,23 @@ contract MyERC20Token {
         balanceOf[msg.sender] -= amount;
 
         emit Transfer(msg.sender, address(0), amount);
+    }
+}
+
+contract MyERC20Token2 is ERC20, Ownable {
+    constructor(
+        string memory name_,
+        string memory symbol_,
+        uint256 initialSupply
+    ) ERC20(name_, symbol_) Ownable(msg.sender) {
+        _mint(msg.sender, initialSupply * 10 ** decimals());
+    }
+
+    function mint(address to, uint256 amount) public onlyOwner {
+        _mint(to, amount);
+    }
+
+    function burn(uint256 amount) public {
+        _burn(msg.sender, amount);
     }
 }
