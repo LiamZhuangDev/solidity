@@ -128,11 +128,13 @@ ERC20 is a standard for fungible tokens on Ethereum. It defines a set of rules (
 - ERC20 tokens are NOT ETH, they live inside a contract, just numbers in a mapping. So No `.call{value:...}("")`.
 
 Why ERC20 exists?
+```
 | Before ERC20                                    | After ERC20                                       |
 | ------------------------------------------------| ------------------------------------------------- |
 | Every token had different interfaces 😵         | ✅ Wallets (MetaMask) understand all tokens       |
 | Wallets & exchanges couldn't interact easily    | ✅ DEXs (Uniswap) can trade any token             | 
 |                                                 | ✅ Contracts can interact with tokens generically | 
+```
 
 1. Important State variables
 - `balanceOf`, tracks how many tokens each address owns
@@ -212,3 +214,25 @@ contract Parent2 is GrandParent {}
 
 contract Child is Parent1, Parent2 {}
 ```
+
+# Contract, Abstract Contract and interface
+In Solidity, `contract`, `abstract contract`, and `interface` all define blueprints for other contracts, but they differ in how complete they are and what they're allowed to contain.
+
+- Contract (Concrete Contract), a regular contract is a fully implemented contract that can be deployed.
+- Abstract Contract, an abstract contract is a partially implemented contract that cannot be deployed.
+- Interface, an interface is a strict blueprint with no implementation at all.
+```
+| Feature             | contract  |  abstract contract  | interface     |
+| ------------------- | --------- | ------------------- | ------------- |
+| Deployable          | ✅        | ❌                  | ❌            |
+| Function bodies     | ✅        | ✅ / ❌             | ❌            |
+| State variables     | ✅        | ✅                  | ❌            |
+| Constructors        | ✅        | ✅                  | ❌            |
+| Inheritance         | ✅        | ✅                  | ✅            |
+| Function visibility | any       | any                 | external only |
+```
+
+🧠 Intuition
+- contract => “Fully built house” 🏠 (ready to live in).
+- abstract contract => “Half-built house” 🚧 (needs finishing).
+- interface => “Blueprint only” 📐 (no implementation at all).

@@ -5,20 +5,30 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 
-contract MyERC20Token {
+interface IERC20x {
+    function totalSupply() external view returns (uint256);
+    function balanceOf(address addr) external view returns (uint256);
+    function allowance(address owner, address spender) external view returns (uint256);
+
+    function transfer(address to, uint256 amount) external returns (bool);
+    function approve(address spender, uint256 amount) external returns (bool);
+    function transferFrom(address from, address to, uint256 amount) external returns (bool);
+
+    event Transfer(address indexed from, address indexed to, uint256 amount);
+    event Approval(address indexed owner, address indexed spender, uint256 amount);
+}
+
+contract MyERC20Token is IERC20x {
     string public name;
     string public symbol;
     uint8 public decimals;
     uint256 public totalSupply;
     bool public paused = false;
 
-    mapping(address => uint256) public balanceOf;
+    mapping(address => uint256) public balanceOf; // owner => amount
     mapping(address => mapping(address => uint256)) public allowance; // owner -> spender -> amount
 
     address public owner;
-
-    event Transfer(address indexed from, address indexed to, uint256 value);
-    event Approval(address indexed owner, address indexed spender, uint256 value);
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Only owner can call this");
