@@ -195,3 +195,20 @@ event Transfer(address indexed from, address indexed to, uint256 value);
 event Approval(address indexed owner, address indexed spender, uint256 value);
 ```
 
+# Contract Inheritance
+- Constructors are executed from most base → most derived (GrandParent -> Parent1 -> Parent2 -> child)
+- Solidity resolves inheritance from right to left 
+```
+Assuming foo exists, the precedence order is:
+Child(super.foo()) -> Parent2(foo()) -> Parent1(foo()) -> GrandParent(foo())
+```
+
+```
+contract GrandParent {}
+
+contract Parent1 is GrandParent {}
+
+contract Parent2 is GrandParent {}
+
+contract Child is Parent1, Parent2 {}
+```
