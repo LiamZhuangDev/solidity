@@ -236,3 +236,20 @@ In Solidity, `contract`, `abstract contract`, and `interface` all define bluepri
 - contract => “Fully built house” 🏠 (ready to live in).
 - abstract contract => “Half-built house” 🚧 (needs finishing).
 - interface => “Blueprint only” 📐 (no implementation at all).
+
+# Solidity Library
+A Solidity library is a specialized, reusable smart contract deployed once at a specific address (except libraries only have internal functions) to provide helper functions, reducing deployment gas costs and promoting modular code.
+- `library` functions are referenced directly
+- `internal` functions are inlined at compile time
+- NO inheritance require
+
+A Solidity library is stateless:
+- ❌ cannot have its own persistent storage
+- ❌ cannot declare state variables like a contract
+- ❌ cannot hold balances or ownership
+
+# using for directive
+The Solidity `using for` directive is used to attach library functions as member functions to a specific data type.
+```
+using LibraryName for Type;
+```
