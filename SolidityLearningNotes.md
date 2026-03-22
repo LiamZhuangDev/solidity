@@ -239,14 +239,39 @@ In Solidity, `contract`, `abstract contract`, and `interface` all define bluepri
 
 # Solidity Library
 A Solidity library is a specialized, reusable smart contract deployed once at a specific address (except libraries only have internal functions) to provide helper functions, reducing deployment gas costs and promoting modular code.
-- `library` functions are referenced directly
-- `internal` functions are inlined at compile time
-- NO inheritance require
+In Solidity, libraries can be used in two fundamentally different ways:
+- Internal libraries (inlined into your contract)
+- External libraries (deployed and called separately)
 
-A Solidity library is stateless:
+1. Internal library
+A library whose functions are marked `internal` (or `private`)
+- functions are referenced directly
+- functions are inlined(copied) into the contract at compile time
+
+2. External library
+A library with `public` or `external` functions.
+- Deployed separately
+- Your contract stores its address
+- Calls it via DELEGATECALL
+  - Code runs in your contract's storage context
+  - Library can read/write your storage
+
+```
+| Feature       | Internal Library | External Library    |
+| ------------- | ---------------- | ------------------- |
+| Deployment    | ❌ Not needed    | ✅ Required         |
+| Call type     | Direct (inlined) | DELEGATECALL        |
+| Gas (runtime) | ✅ Cheaper       | ❌ More expensive   |
+| Bytecode size | ❌ Larger        | ✅ Smaller          |
+| Reusability   | Limited          | High                |
+| Safety        | ✅ Safer         | ⚠️ Depends on trust |
+```
+
+3. A Solidity library is stateless:
 - ❌ cannot have its own persistent storage
 - ❌ cannot declare state variables like a contract
 - ❌ cannot hold balances or ownership
+- ❌ cannot be inherited
 
 # using for directive
 The Solidity `using for` directive is used to attach library functions as member functions to a specific data type.
