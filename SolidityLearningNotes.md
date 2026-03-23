@@ -278,3 +278,62 @@ The Solidity `using for` directive is used to attach library functions as member
 ```
 using LibraryName for Type;
 ```
+
+# What is a Solidity event?
+A Solidity `event` is a way for a contract to emit structured logs during execution.
+These logs are:
+- stored in the transaction receipt
+- not part of contract storage
+- mainly used by off-chain apps (UIs, indexers, analytics)
+```
+Blockchain
+├─ Blocks
+│   ├─ Transactions
+│   │   ├─ Receipt
+│   │   │   └─ Logs (events) ⭐ Events在这里
+│
+└─ World State (全局状态)
+    ├─ Account A
+    │   ├─ balance
+    │   ├─ nonce
+    │   ├─ codeHash (empty)
+    │   └─ storage root (empty)
+    │
+    ├─ Account B
+    └─ Contract Account
+        ├─ balance
+        ├─ nonce
+        ├─ codeHash
+        └─ storage root ⭐ Contract States在这里
+```
+
+# What's inside a events?
+when you emit an event, it becomes a log entry with this structure:
+```
+Log
+├─ address        (contract that emitted it)
+├─ topics[]       (indexed fields)
+└─ data           (non-indexed fields)
+```
+`topic` stored as fixed-size 32-byte values and used for filtering/searching
+ - Topic[0] - event signature code (e.g. Transfer(address,address,uint256), hashed using keccak256)
+ - Topic[1..n] - indexed parameters
+
+# What's Anonymous Events in Solidity?
+An anonymous event is a special type of event declare with the `anomymous` keyword:
+```
+event MyEvent(address indexed user, uint256 amount) anomymous;
+```
+It does NOT include the event signature hash in `topic[0]`.
+
+Why use anonymous events?
+
+✅ 1. Save gas. No need to store signature hash, slightly cheaper per emit.
+
+✅ 2. More indexed fields, can have up to four indexed fields.
+
+Downsides:
+- Hard to filter, must filter manually by contract + topics.
+- Hard to decode.
+
+So rarely used in practice.
