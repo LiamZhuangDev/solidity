@@ -337,3 +337,21 @@ Downsides:
 - Hard to decode.
 
 So rarely used in practice.
+
+# Set up Dapp frontend
+- system level
+```
+sudo apt update
+sudo apt install nodejs npm
+
+node -v
+npm -v
+```
+
+- project level
+```
+mkdir my-dapp
+cd my-dapp
+npm init -y
+npm install web3
+```
