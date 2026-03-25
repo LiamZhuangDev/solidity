@@ -42,6 +42,9 @@ contract CustomError {
 contract CustomErrorCaller {
     CustomError private ce;
 
+    event OperationFailed(string reason);
+    event PanicCaught(uint256 errorCode);
+
     constructor() {
         ce = new CustomError();
     }
@@ -49,6 +52,8 @@ contract CustomErrorCaller {
     function testTransfer(address to, uint256 amount) public {
         try ce.transfer(to, amount) {
             // success case
+        } catch Error(string memory reason) {
+            emit OperationFailed(reason);
         } catch (bytes memory reason) {
             bytes4 selector;
 
@@ -74,6 +79,19 @@ contract CustomErrorCaller {
             } else {
                 // unknown error
             }
+        } catch Panic(uint errorCode) {
+            // 捕获Panic错误
+            // errorCode可能的值：
+            // 0x01: assert失败
+            // 0x11: 算术运算溢出/下溢
+            // 0x12: 除以零或模零
+            // 0x21: 枚举转换错误
+            // 0x22: 访问存储字节数组错误
+            // 0x31: 对空数组调用.pop()
+            // 0x32: 数组越界
+            // 0x41: 分配过多内存
+            // 0x51: 调用零值internal function
+            emit PanicCaught(errorCode);
         }
     }
 }
