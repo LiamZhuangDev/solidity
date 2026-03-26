@@ -12,7 +12,7 @@ contract MultiSigWallet {
     mapping(address => bool) isOwner;
     Transaction[] public transactions;
     uint public required;
-    mapping(uint => mapping(address => bool)) public isConfirmed;
+    mapping(uint => mapping(address => bool)) public isConfirmed; // txId => owner => confirmed or not
 
     modifier onlyOwner {
         require(isOwner[msg.sender], "Not owner");
@@ -73,6 +73,7 @@ contract MultiSigWallet {
     {
         Transaction storage txn = transactions[_txnId];
         require(txn.numConfirmations >= required, "Not enough confirmations");
+        
         txn.executed = true;
 
         (bool success, ) = payable(txn.to).call{value: txn.value}("");
