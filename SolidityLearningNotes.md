@@ -355,3 +355,39 @@ cd my-dapp
 npm init -y
 npm install web3
 ```
+
+# call, delegatecall and staticcall
+1. `call`, a low-level external call that executes code in the target contract's context.
+```
+(bool success, bytes memory data) = target.call(data);
+```
+ - Executes target contract's code
+ - Uses target contract's storage
+ - `msg.sender` is caller contract
+ - Can modify state
+ - Can send ETH
+
+2. `delegatecall`, executes another contract's code, but in the caller's context.
+```
+(bool succcess, bytes memory data) = target.delegatecall(data);
+```
+ - Execute target contract's code
+ - Uses caller's storage ❗
+ - `msg.sender` is original external caller ❗ It's the very first sender in the call chain, not changed across calls
+ - Can modify caller's state
+ - Cannot tranfer ETH separately (uses caller's balance implicitly)
+
+3. `staticcall` a read-only call that guarantees no state modification.
+```
+(bool success, bytes memory data) = target.staticcall(data);
+```
+ - Executes target's code
+ - Uses target's storage
+ - `msg.sender` is caller contract
+ - Cannot modify state ❗
+ - Cannot send ETH ❗
+
+ 4. 🧠 Final intuition, think of them like this:
+- call → “Go run code over there”
+- delegatecall → “Run their code here using my data”
+- staticcall → “Ask them a question, but don't let them change anything”
