@@ -18,13 +18,13 @@ contract SafeBatchTransfer {
         }
 
         require(balanceOf[msg.sender] >= totalAmount, "insufficient balance");
-
+        balanceOf[msg.sender] -= totalAmount;
+        
         for (uint i = 0; i < recipients.length; i++) {
             require(recipients[i] != address(0), "invalid address");
             require(amounts[i] > 0, "invalid amount");
             address to = recipients[i];
             uint amount = amounts[i];
-            balanceOf[msg.sender] -= amount;
             balanceOf[to] += amount;
 
             (bool success, ) = payable(to).call{value: amount}("");
