@@ -552,3 +552,30 @@ y -= 1; // becomes 255
    - Passwords
    - Secrets and 
    - Private keys
+
+# Solidity Design Patterns
+1. Security Patterns
+ - Checks-Effects-Interactions (CEI), prevents reentrancy attacks. Always update state `before` external calls.
+ - Reentrancy Guard, use a lock to prevent reentrant calls.
+ - Ownable (Access Control), restricts functions to an admin. Use for admin functions like upgrades or withdrawals.
+ - Role-Based Access Control (RBAC), more flexible than Ownable. Used when multiple roles exist (admin, minter, etc.)
+ - Pull over Push Payments, instead of sending ETH automatically, let users withdraw it. Avoid failed transfers blocking execution.
+2. Architectural Patterns
+ - Factory Patterns, deploy contracts from another contract. Useful for DAOs, wallets, NFT collections.
+ ```
+ function createContract() public {
+    new MyContract();
+ }
+ ```
+ - Proxy Pattern, separate logic and storage. Enables contract upgrades without losing state.
+   - Proxy holds storage
+   - implementation holds logic
+   - use `delegatecall` to execute logic in the implementation contract
+3. Gas Optimization
+ - Struct Packing, optimize storage slots.
+ - Mapping over Arrays. Mappings are cheaper and O(1). Avoid loops when possible.
+ - Event Sourcing, Use events instead of storage for history. Much cheaper than arrays in storage.
+4. Behavioral Patterns
+ - State Machine, control contract flow with states. Used in auctions, escrow, workflows.
+ - Commit-Reveal, prevent front-running attack. Common in games, voting sealed bids.
+ - Circuit Breaker (Pausable), emergency stop mechanism.
