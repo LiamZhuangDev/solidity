@@ -359,7 +359,10 @@ npm install web3
 # call, delegatecall and staticcall
 1. `call`, a low-level external call that executes code in the target contract's context.
 ```
-(bool success, bytes memory data) = target.call(data);
+(bool success, bytes memory data) = target.call{options}(data);
+
+e.g.
+(bool success, bytes memory data) = payable(msg.sender).call{value: msg.value, gas: 5000}(data);
 ```
  - Executes target contract's code
  - Uses target contract's storage
@@ -369,7 +372,8 @@ npm install web3
 
 2. `delegatecall`, executes another contract's code, but in the caller's context.
 ```
-(bool succcess, bytes memory data) = target.delegatecall(data);
+(bool succcess, bytes memory data) = target.delegatecall{options}(data);
+Note that options of delegatecall can only be gas, it doesn't support value.
 ```
  - Execute target contract's code
  - Uses caller's storage ❗
@@ -379,7 +383,8 @@ npm install web3
 
 3. `staticcall` a read-only call that guarantees no state modification.
 ```
-(bool success, bytes memory data) = target.staticcall(data);
+(bool success, bytes memory data) = target.staticcall{options}(data);
+Note that staticcall supports only {gas: ...}.
 ```
  - Executes target's code
  - Uses target's storage
@@ -388,6 +393,162 @@ npm install web3
  - Cannot send ETH ❗
 
  4. 🧠 Final intuition, think of them like this:
-- call → “Go run code over there”
-- delegatecall → “Run their code here using my data”
-- staticcall → “Ask them a question, but don't let them change anything”
+- call → "Go run code over there"
+- delegatecall → "Run their code here using my data"
+- staticcall → "Ask them a question, but don't let them change anything"
+
+# Solidity Safety
+Solidity safety is all about writing smart contracts that can't be manipulated or broken, especially since code on blockchains like Ethereum is immutable (they can't be easily changed after deployment).
+
+1. Reentrancy attach
+ - A contract calls another contract, and that contract calls back into the original before it finishes.
+ - Example problem
+```
+payable(msg.sender).call{value: amount}("");
+balanceOf[msg.sender] -= amount;
+```
+An attacker can repeatedly withdraw funds before the balance updates.
+
+ - Fix
+   - Use Checks-Effects-Interactions(CEI) patthern
+   - or a guard like `nonReentrant` from OpenZeppelin
+
+2. Integer Overflow / Underflow
+ - Before Solidity 0.8, numbers could wrap around
+ ```
+ uint8 x = 255;
+ x += 1; // becomes 0
+
+uint8 y = 0;
+y -= 1; // becomes 255
+ ```
+  - Fix
+    - Solidity >= 0.8 automatically checks this 
+    - Older code uses `SafeMath`
+
+3. Access Control Issues
+ - Functions that should be restricted are accidentally public.
+ - Derives from `Ownable` and uses `onlyOwner` modifier from OpenZeppelin
+ ```
+ import "@openzeppelin/contracts/access/Ownable.sol";
+
+ contract OwnableToken is Ownable {
+    constructor() Ownable() {
+
+    }
+
+    function mint(address to, uint256 amount) external onlyOwner {
+        // update to's balance
+    }
+ }
+ ```
+ - Fine-grained role-based `AccessControl` from OpenZeppelin
+ ```
+ contract TokenWithRoles is AccessControl {
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
+
+    constructor() {
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _setupRole(MINTER_ROLE, msg.sender);
+        _setupRole(BURNER_ROLE, msg.sender);
+    }
+
+    function mint(address to, uint256 amount) external onlyRole(MINTER_ROLE) {
+        // update to's balance
+    }
+
+    function burn(address from, uint256 amount) external onlyRole(BURNER_ROLE) {
+        // update from's balance
+    }
+ }
+ ```
+
+4. Unchecked External Calls
+ - Calling another contract is risky, that contract could
+   - Fail sliently
+   - Reenter
+   - Consume all gas
+ - Fix
+   - Check return values
+   - Use `try/catch`
+
+5. Gas Limit and Loops
+ - Unbounded loops can break your contract
+ ```
+ for (uint i = 0; i < users.length; i++) {...}
+ ```
+ if `users` grows too big, function becomes unusable
+ - Fix
+   - Limit the loops iteration
+   - Pagination
+
+6. `tx.origin` Vulnerability
+ - Use `tx.origin` for authentication is dangerous. Imagine this phishing attack:
+ ```
+ Victim Contract:
+ function withdraw() public {
+    require(tx.origin == owner);
+    payable(msg.sender).transfer(address(this).balance);
+ }
+ 
+ Malicious Contract:
+ function trick() public {
+    victimContract.withdraw();
+ }
+
+ user -> maliciou contract -> victim contract (require check passes, the attacker drains victim contract's funds)
+ ```
+ - Fix
+ ```
+ require(msg.sender == owner);
+ ```
+
+7. Front-Running
+ - Since transactions are public before confirmation, attackers can see and beat your transaction.
+ - Example
+ ```
+ You submit a trade, which is sitting in the mempool before it's confirmed and added to a block.
+ Bot copies it with higher gas to make it executes first.
+ ```
+ - Fix
+   - Commit-reveal schemes
+   - Use private mempools
+
+8. Denial of Service (DoS)
+ - Attackers can block contract functionality
+ - Example
+ ```
+ for (uint i = 0; i < users.length; i++) {
+    payable(users[i]).transfer(amounts[i]);
+ }
+
+ An attacker adds a malicious contract to users[]:
+ receive() external payable {
+    revert(); // always fails
+ }
+ 
+ Then one failing transfer in a loop stops everything.
+ ```
+ - Fix
+   - Use pull over push pattern, instead of sending funds in a loop, let user withdraw themselves
+   ```
+   public withdraw() public {
+       uint amount = balanceOf[msg.sender];
+       balanceOf[msg.sender] = 0;
+       payable(msg.sender).call{value: msg.value}("");
+   }
+   ```
+   - Avoid dependency on single external calls
+     - If this external call fails… does my contract still work? If NO, dangerous design, resilient design if YES.
+
+9. Delegatecall Risks
+ - `delegatecall` execute code in your contract's context
+ - If misused, attacker can overwrite storage.
+
+10. Private data isn't Private
+ - Even if marked `private`, data is still visible on-chain.
+ - Never store 
+   - Passwords
+   - Secrets and 
+   - Private keys
