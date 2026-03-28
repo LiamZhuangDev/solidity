@@ -19,6 +19,7 @@ contract Counter {
 contract CounterFactory {
     event CounterCreated(address indexed counterAddress, bytes32 salt);
 
+    // Address first, Contract After
     function createWithCreate2(bytes32 salt) external returns (address) {
         Counter counter = new Counter{salt: salt}(msg.sender);
         address counterAddress = address(counter);
