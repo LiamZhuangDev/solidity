@@ -22,11 +22,27 @@ contract Crowdfunding {
     uint public goal;
     uint public deadline;
     uint public totalFunded;
+    bool public paused;
 
     mapping(address => uint) public fundsContributed;
 
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not owner");
+        _;
+    }
+
     modifier inState(State expected) {
         require(currState == expected, "Invalid state");
+        _;
+    }
+
+    modifier whenNotPaused() {
+        require(!paused, "Already paused");
+        _;
+    }
+
+    modifier whenPaused() {
+        require(paused, "Not paused");
         _;
     }
 
@@ -65,7 +81,7 @@ contract Crowdfunding {
         }
     }
 
-    function withdraw() public inState(State.Success) {
+    function withdraw() public onlyOwner inState(State.Success) whenNotPaused {
         // require(block.timestamp >= deadline, "Fundraising not ended");
         if (block.timestamp < deadline) {
             revert FundraisingStillActive();
@@ -73,7 +89,7 @@ contract Crowdfunding {
         if (msg.sender != owner) {
             revert Unauthorized(msg.sender);
         }
-        
+
         (bool success, ) = payable(owner).call{value: address(this).balance}("");
         // require(success, "withdraw failed");
         if (!success) {
@@ -82,7 +98,7 @@ contract Crowdfunding {
     }
 
     // Checks-Effects-Interactions pattern
-    function refund() public inState(State.Failed) {
+    function refund() public inState(State.Failed) whenNotPaused {
         // checks
         // require(block.timestamp >= deadline, "Fundraising not ended");
         if (block.timestamp < deadline) {
@@ -104,6 +120,14 @@ contract Crowdfunding {
 
     function getProgress() public view returns (uint percentage) {
         return (totalFunded * 100) / goal;
+    }
+
+    function pause() public onlyOwner {
+        paused = true;
+    }
+
+    function unpause() public onlyOwner {
+        paused = false;
     }
 
     receive() external payable {
