@@ -1,10 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.31;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
-
 interface IERC20x {
     function totalSupply() external view returns (uint256);
     function balanceOf(address addr) external view returns (uint256);
@@ -140,13 +136,20 @@ contract MyERC20Token is IERC20x {
     }
 }
 
+/*
+* Use OpenZeppelin
+*/
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
+
 contract MyERC20Token2 is ERC20, Ownable, Pausable {
     constructor(
-        string memory name_,
-        string memory symbol_,
-        uint256 initialSupply
-    ) ERC20(name_, symbol_) Ownable(msg.sender) {
-        _mint(msg.sender, initialSupply * 10 ** decimals());
+        string memory _name,
+        string memory _symbol,
+        uint256 _initialSupply
+    ) ERC20(_name, _symbol) Ownable(msg.sender) {
+        _mint(msg.sender, _initialSupply * 10 ** decimals());
     }
 
     function mint(address to, uint256 amount) public onlyOwner {
