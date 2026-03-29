@@ -25,6 +25,7 @@ contract SimpleToken {
     }
 }
 
+// 200,000+ gas
 contract TokenFactory {
     SimpleToken[] public tokens;
 
