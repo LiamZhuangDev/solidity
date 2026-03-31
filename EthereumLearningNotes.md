@@ -8,7 +8,7 @@ Blockers are batches of transactions with a hash of the previous block in the ch
 Ethereum is a blockchain with a single, canonical computer (Ethereum Virtual Machine) embedded in it. It is the foundation for building apps and organizations in a decentralized, permisionless, censorship-resistant way.
 
 # What is ether?
-Ether(ETH) is the native cryptocurrency of Ethereum. The purpose of ETH is to allow for a market for computation. Such a market provides an economic incentive for participants to verify and execute transaction requests and provide computational resources to the network.
+Ether(ETH) is the native cryptocurrency of Ethereum. ETH is not a special type - it's just a number in wei (1 ether = 10^18 wei). The purpose of ETH is to allow for a market for computation. Such a market provides an economic incentive for participants to verify and execute transaction requests and provide computational resources to the network.
 
 # What are smart contracts?
 Smart contracts are turning complete programs published into EVM state, they can be called with certain parameters, perform some actions or computation if certain condition are satified. They are often also called dApps, or decentralized apps.
@@ -24,7 +24,7 @@ The simplest transaction is transferring ETH from one account to another.
 # What is Ethereum virtual machine (EVM)?
 The Ethereum Virtual Machine (EVM) is a decentralized virtual environment that executes code consistently and securely across all Ethereum nodes.
 
-When a transaction calls a smart contract, the Ethereum Virtual Machine executes the contract’s compiled bytecode instruction-by-instruction on a stack-based machine across all nodes, consuming gas and updating the blockchain state deterministically if execution succeeds.
+When a transaction calls a smart contract, the Ethereum Virtual Machine executes the contract's compiled bytecode instruction-by-instruction on a stack-based machine across all nodes, consuming gas and updating the blockchain state deterministically if execution succeeds.
 
 # What is Gas and Gas fee?
 Gas refers to the unit that measures the amount of computational effort required to execute specific operations on the Ethereum network.
