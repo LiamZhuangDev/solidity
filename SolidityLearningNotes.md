@@ -579,3 +579,41 @@ y -= 1; // becomes 255
  - State Machine, control contract flow with states. Used in auctions, escrow, workflows.
  - Commit-Reveal, prevent front-running attack. Common in games, voting sealed bids.
  - Circuit Breaker (Pausable), emergency stop mechanism.
+
+ # ERC Standards
+ 1. ERC-165, interface detection standard for smart contracts, it specifies an `supportInterface(bytes4 interfaceId)` function that returns a boolean indicating whether a contract implements an interface identified by a unique 4-byte ID.
+ 2. ERC-20, it's the standard interface for `fungible` tokens on Ethereum. It defines a set of rules(functions + events) that a token contract must implement.
+ 3. ERC-721, its' the standard for `non-fungible` tokens on Ethereum.
+ 4. ERC-2981, it defines NFT `royalty info` - who gets paid and how much when an NFT is sold.
+
+ # ERC-721
+- Core functions and events
+```
+function ownerOf(uint256 tokenId) external view returns (address);
+function balanceOf(address owner) external view returns (uint256);
+
+function transferFrom(address from, address to, uint256 tokenId) external;
+function safeTransferFrom(address from, address to, uint256 tokenId) external;
+
+function approve(address to, uint256 tokenId) external;
+function setApprovalForAll(address operator, bool approved) external;
+
+function tokenURI(uint256 tokenId) external view returns (string memory);
+
+event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
+event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId);
+event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
+```
+- Example flow
+  - Mint NFT
+  ```
+  mint -> Token #1 -> Alice
+  ``` 
+  - Transfer
+  ```
+  Alice -> Bob (tokenId = 1)
+  ```
+  - Check
+  ```
+  ownerOf(1) -> Bob
+  ```
