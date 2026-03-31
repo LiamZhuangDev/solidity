@@ -3,9 +3,10 @@ pragma solidity ^0.8.31;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/token/common/ERC2981.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract GopherNFT is ERC721, ERC721URIStorage, Ownable {
+contract GopherNFT is ERC721, ERC721URIStorage, ERC2981, Ownable {
     uint256 private _tokenCount;
 
     uint256 public constant MAX_SUPPLY = 10000;
@@ -13,7 +14,9 @@ contract GopherNFT is ERC721, ERC721URIStorage, Ownable {
 
     event Minted(address indexed to, uint256 tokenId);
 
-    constructor() ERC721("GopherNFT", "GONFT") Ownable(msg.sender) {}
+    constructor() ERC721("GopherNFT", "GONFT") Ownable(msg.sender) {
+        _setDefaultRoyalty(msg.sender, 250); // 2.5% = 250 / 10000
+    }
 
     function mint(string memory uri) public payable returns (uint256) {
         require(_tokenCount < MAX_SUPPLY, "Max Supply reached");
@@ -59,7 +62,7 @@ contract GopherNFT is ERC721, ERC721URIStorage, Ownable {
     function supportsInterface(bytes4 interfaceId)
         public 
         view 
-        override(ERC721, ERC721URIStorage) 
+        override(ERC721, ERC721URIStorage, ERC2981) 
         returns (bool) 
     {
         return super.supportsInterface(interfaceId);
