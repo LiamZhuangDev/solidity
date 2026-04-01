@@ -15,7 +15,7 @@ contract GopherNFT is ERC721, ERC721URIStorage, ERC2981, Ownable {
     event Minted(address indexed to, uint256 tokenId);
 
     constructor() ERC721("GopherNFT", "GONFT") Ownable(msg.sender) {
-        _setDefaultRoyalty(msg.sender, 250); // 2.5% = 250 / 10000
+        _setDefaultRoyalty(msg.sender, 500); // 5.0% = 500 / 10000
     }
 
     function mint(string memory uri) public payable returns (uint256) {
