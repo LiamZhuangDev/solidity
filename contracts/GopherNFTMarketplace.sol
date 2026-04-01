@@ -1,14 +1,35 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.31;
 
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+import "@openzeppelin/contracts/interfaces/IERC721.sol";
+import "@openzeppelin/contracts/interfaces/IERC721Receiver.sol";
+import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
-interface IERC2981 is IERC165 {
-    function royaltyInfo(uint256 _tokenId, uint256 _salePrice)
-        external view returns (address receiver, uint256 royaltyAmount);
+import "./GopherPaymentLib.sol";
+import "./GopherRoyaltyLib.sol";
+
+// Design Overview:
+// User
+//  ↓
+// Marketplace (entry point / orchestrator)
+//  ├─ Fixed-price sales (list → buy)
+//  └─ Delegates auctions → AuctionHouse
+//                           ├─ createAuction
+//                           ├─ placeBid
+//                           └─ endAuction
+
+interface IAuctionHouse {
+    function createAuction(
+        address seller,
+        address nft,
+        uint256 tokenId,
+        uint256 startPrice,
+        uint256 duration
+    ) external returns (uint256);
+    
+    function isActive(address nft, uint256 tokenId) external view returns (bool);
 }
 
 contract GopherNFTMarketplace is ReentrancyGuard {
@@ -20,24 +41,13 @@ contract GopherNFTMarketplace is ReentrancyGuard {
         bool active;
     }
 
-    struct Auction {
-        address seller;
-        address nftContract;
-        uint256 tokenId;
-        uint256 startPrice;
-        uint256 highestBid;
-        address highestBidder;
-        uint256 endTime;
-        bool active;
-    }
-
     mapping(uint256 => Listing) public listings; // listing Id => listed NFT
+    mapping(address => mapping(uint256 => bool)) public isListed; // nft => tokenId => isListed
     uint256 public listingCount;
 
-    mapping(uint256 => Auction) public auctions;
-    uint256 public auctionCount;
+    IAuctionHouse public auction;
 
-    mapping(uint256 => mapping(address => uint256)) public pendingRefunds;
+    // mapping(uint256 => mapping(address => uint256)) public pendingRefunds;
 
     uint256 public constant ListingFee = 250; // 2.5% = 250 / 10,000
 
@@ -68,34 +78,21 @@ contract GopherNFTMarketplace is ReentrancyGuard {
         uint256 price
     );
 
-    event AuctionCreated(
-        uint256 indexed auctionId,
-        address indexed seller,
-        address indexed nftContract,
-        uint256 tokenId,
-        uint256 startingPrice,
-        uint256 endTime
-    );
+    constructor(address _auction, address _feeRecipient) {
+        auction = IAuctionHouse(_auction);
+        feeRecipient = _feeRecipient;
+    }
 
-    event BidPlaced(
-        uint256 indexed auctionId,
-        address indexed bidder,
-        uint256 amount
-    );
-
-    event BidEnded(
-        uint256 indexed auctionId,
-        address indexed winner,
-        uint256 finalPrice
-    );
-
-    function ListingNFT(
+    // =========================== LISTING ==============================
+    function ListNFT(
         address nftContract,
         uint256 tokenId,
         uint256 price
     ) external returns (uint256) {
         require(price > 0, "Invalid price");
         require(nftContract != address(0), "Invalid NFT contract");
+        require(!isListed[nftContract][tokenId], "Already listed");
+        require(!auction.isActive(nftContract, tokenId), "In auction");
 
         IERC721 nft = IERC721(nftContract);
 
@@ -114,6 +111,7 @@ contract GopherNFTMarketplace is ReentrancyGuard {
             price: price,
             active: true
         });
+        isListed[nftContract][tokenId] = true;
 
         emit NFTListed(
             listingCount,
@@ -129,10 +127,11 @@ contract GopherNFTMarketplace is ReentrancyGuard {
     function delist(uint256 listingId) external {
         Listing storage listing = listings[listingId];
 
-        require(listing.active, "NFT not active");
+        require(listing.active, "NFT not listed");
         require(listing.seller == msg.sender, "Not owner");
 
         listing.active = false;
+        isListed[listing.nftContract][listing.tokenId] = false;
 
         emit NFTDelisted(listingId, msg.sender);
     }
@@ -142,7 +141,7 @@ contract GopherNFTMarketplace is ReentrancyGuard {
 
         Listing storage listing = listings[listingId];
         require(listing.seller == msg.sender, "Not owner");
-        require(listing.active, "NFT not active");
+        require(listing.active, "NFT not listed");
 
         listing.price = newPrice;
 
@@ -151,58 +150,39 @@ contract GopherNFTMarketplace is ReentrancyGuard {
 
     // fixed-price sales
     function buyNFT(uint256 listingId) external payable nonReentrant {
-        Listing storage listing = listings[listingId];
+        Listing storage l = listings[listingId];
 
-        require(listing.active, "Not active");
-        require(msg.value > listing.price, "Insufficient funds");
-        require(msg.sender != listing.seller, "Cannot buy your own NFT");
+        require(l.active, "Inactive");
+        require(msg.value > l.price, "Insufficient funds");
+        require(msg.sender != l.seller, "Cannot buy your own NFT");
 
-        listing.active = false;
+        l.active = false;
+        isListed[l.nftContract][l.tokenId] = false;
+        uint256 fee = (l.price * ListingFee) / 10000;
 
-        uint256 fee = (listing.price * ListingFee) / 10000;
+        (address royaltyReceiver, uint256 royaltyAmount) = GopherRoyaltyLib.getRoyaltyInfo(
+            l.nftContract,
+            l.tokenId,
+            l.price);
 
-        (address royaltyReceiver, uint256 royaltyAmount) = _getRoyaltyInfo(
-            listing.nftContract, 
-            listing.tokenId, 
-            listing.price);
+        GopherPaymentLib.distribute(l.seller, feeRecipient, royaltyReceiver, l.price, fee, royaltyAmount);
 
-        uint amountToSeller = listing.price - fee - royaltyAmount;
-
-        IERC721(listing.nftContract).safeTransferFrom(
-            listing.seller,
-            msg.sender,
-            listing.tokenId
-        );
-
-        if (royaltyAmount > 0 && royaltyReceiver != address(0)) {
-            (bool successRoyalty, ) = payable(royaltyReceiver).call{value: royaltyAmount}("");
-            require(successRoyalty, "Royalty transfer failed");
-        }
-
-        (bool successSeller, ) = payable(listing.seller).call{value: amountToSeller}("");
-        require(successSeller, "Seller transfer failed");
-
-        (bool successFee, ) = payable(feeRecipient).call{value: fee}("");
-        require(successFee, "Fee transfer failed");
-
-        if (msg.value > listing.price) {
-            (bool successRefund, ) = msg.sender.call{value: msg.value - listing.price}("");
-            require(successRefund, "Refund failed");
-        }
-
-        emit NFTSold(listingId, msg.sender, listing.seller, listing.price);
+        emit NFTSold(listingId, msg.sender, l.seller, l.price);
     }
 
-    function _getRoyaltyInfo(
-        address nftContract,
+    // =========================== Auction ==============================
+    function createAuction(
+        address nft,
         uint256 tokenId,
-        uint256 price
-    ) internal view returns (address receiver, uint256 royaltyAmount) {
-        if (IERC165(nftContract).supportsInterface(type(IERC2981).interfaceId)) {
-            (receiver, royaltyAmount) = IERC2981(nftContract).royaltyInfo(tokenId, price);
-        } else {
-            receiver = address(0);
-            royaltyAmount = 0;
-        }
+        uint256 startPrice,
+        uint256 duration
+    ) external {
+        require(!isListed[nft][tokenId], "Already listed");
+        require(!auction.isActive(nft, tokenId), "In auction");
+        require(IERC721(nft).ownerOf(tokenId) == msg.sender, "Not owner");
+
+        IERC721(nft).transferFrom(msg.sender, address(auction), tokenId);
+
+        auction.createAuction(msg.sender, nft, tokenId, startPrice, duration);
     }
 }
